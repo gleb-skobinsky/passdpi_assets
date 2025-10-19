@@ -1,0 +1,152 @@
+root@2f730e3ee4a6:/app/passdpi_assets# ./install_easy.sh
+* checking system
+system is not either systemd, openrc or openwrt based
+easy installer can set up config settings but can't configure auto start
+you have to do it manually. check readme.md for manual setup info.
+do you want to continue (default : N) (Y/N) ? Y
+system is based on linux
+* checking source files
+* checking executables
+found architecture "my"
+* checking privileges
+* checking location
+
+easy install is supported only from default location : /opt/zapret
+currently its run from /app/passdpi_assets
+do you want the installer to copy it for you (default : N) (Y/N) ? Y
+
+installer found existing /opt/zapret
+directory needs to be replaced. config and custom scripts can be kept or replaced with clean version
+do you want to delete all files there and copy this version (default : N) (Y/N) ? Y
+
+keep config, custom scripts and user lists (default : Y) (Y/N) ? N
+relaunching itself from /opt/zapret
+* checking system
+system is not either systemd, openrc or openwrt based
+easy installer can set up config settings but can't configure auto start
+you have to do it manually. check readme.md for manual setup info.
+do you want to continue (default : N) (Y/N) ? Y
+system is based on linux
+* checking source files
+* checking executables
+found architecture "my"
+* checking privileges
+* checking location
+running from /opt/zapret
+* checking DNS
+system DNS is working
+* checking virtualization
+cannot detect
+
+select firewall type :
+1 : iptables
+2 : nftables
+your choice (default : iptables) : 1
+selected : iptables
+* checking prerequisites
+required utilities exist : curl ip6tables ipset iptables
+* installing binaries
+using arch detect method : bash
+my is OK
+installing binaries ...
+linking : ../binaries/my/ip2net => /opt/zapret/ip2net
+linking : ../binaries/my/mdig => /opt/zapret/mdig
+linking : ../binaries/my/nfqws => /opt/zapret/nfq
+linking : ../binaries/my/tpws => /opt/zapret/tpws
+
+enable ipv6 support (default : N) (Y/N) ? N
+
+select filtering :
+1 : none
+2 : ipset
+3 : hostlist
+4 : autohostlist
+your choice (default : none) : 4
+selected : autohostlist
+
+enable tpws socks mode on port 987 ? (default : N) (Y/N) ? N
+
+enable tpws transparent mode ? (default : N) (Y/N) ? Y
+
+TPWS_PORTS=80,443
+TPWS_OPT="
+--filter-tcp=80 --methodeol <HOSTLIST> --new
+--filter-tcp=443 --split-pos=1,midsld --disorder <HOSTLIST> "
+verifying tpws options
+self-built version Oct 19 2025 21:28:03
+
+we have 2 user defined desync profile(s) and default low priority profile 0
+Loading hostlist /opt/zapret/ipset/zapret-hosts-auto.txt
+loading plain text list
+Loaded 0 hosts from /opt/zapret/ipset/zapret-hosts-auto.txt
+Loading hostlist /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+loading plain text list
+Loaded 8 hosts from /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+Loading hostlist /opt/zapret/ipset/zapret-hosts-user.txt
+loading plain text list
+Loaded 1 hosts from /opt/zapret/ipset/zapret-hosts-user.txt
+Running as UID=999 GID=999
+command line parameters verified
+do you want to edit the options (default : N) (Y/N) ? N
+
+enable nfqws ? (default : N) (Y/N) ? N
+
+current custom scripts in /opt/zapret/init.d/sysv/custom.d:
+Make sure this is ok
+
+LAN interface :
+1 : NONE
+2 : eth0
+3 : ip6tnl0
+4 : lo
+5 : tunl0
+your choice (default : NONE) : 2
+selected : eth0
+WAN interface :
+1 : ANY
+2 : eth0
+3 : ip6tnl0
+4 : lo
+5 : tunl0
+your choice (default : ANY) : 1
+selected : ANY
+
+do you want to auto download ip/host list (default : N) (Y/N) ? Y
+1 : get_refilter_domains.sh
+2 : get_antizapret_domains.sh
+3 : get_reestr_resolvable_domains.sh
+4 : get_reestr_hostlist.sh
+your choice (default : get_antizapret_domains.sh) : 1
+selected : get_refilter_domains.sh
+* downloading blocked ip/host list
+setting high oom kill priority
+clearing all known DNS caches
+DNS is working
+digging 8 ipv4 domains : /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+mdig stats : 00:00:00 : domains=8 success=5 error=3
+digging 0 ipv4 domains : /opt/zapret/ipset/zapret-hosts-user-ipban.txt
+mdig stats : 00:00:00 : domains=0 success=0 error=0
+setting high oom kill priority
+reloading ipset backend (forced-update)
+ipset v7.19: Kernel error received: Operation not permitted
+ipset v7.19: Kernel error received: Operation not permitted
+Adding to ipset ipban : /opt/zapret/ipset/zapret-ip-user-ipban.txt
+ipset v7.19: Kernel error received: Operation not permitted
+Adding to ipset nozapret : /opt/zapret/ipset/zapret-ip-exclude.txt
+ipset v7.19: Error in line 1: Kernel error received: Operation not permitted
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  707k  100  707k    0     0   784k      0 --:--:-- --:--:-- --:--:--  784k
+forcing zapret daemons to reload their hostlist
+* adding crontab entry
+!!! CRON IS ABSENT !!! LISTS AUTO UPDATE WILL NOT WORK !!!
+
+!!! WARNING. YOUR SETUP IS INCOMPLETE !!!
+you must manually add to auto start : /opt/zapret/init.d/sysv/zapret start
+make sure it's executed after your custom/firewall iptables configuration
+if your system uses sysv init : ln -fs /opt/zapret/init.d/sysv/zapret /etc/init.d/zapret ; chkconfig zapret on
+
+press enter to continue
+

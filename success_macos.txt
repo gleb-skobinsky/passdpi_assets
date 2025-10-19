@@ -1,0 +1,195 @@
+glebgutnik@MacBook-Pro zapret % ./install_easy.sh
+* checking system
+system is based on macos
+* checking source files
+* checking executables
+found architecture "my"
+* checking privileges
+root is required
+elevating with sudo
+* checking system
+system is based on macos
+* checking source files
+* checking executables
+found architecture "my"
+* checking privileges
+* checking location
+
+easy install is supported only from default location : /opt/zapret
+currently its run from /Users/glebgutnik/projects/zapret
+do you want the installer to copy it for you (default : N) (Y/N) ? Y
+
+installer found existing /opt/zapret
+directory needs to be replaced. config and custom scripts can be kept or replaced with clean version
+do you want to delete all files there and copy this version (default : N) (Y/N) ? Y
+
+keep config, custom scripts and user lists (default : Y) (Y/N) ? N
+relaunching itself from /opt/zapret
+* checking system
+system is based on macos
+* checking source files
+* checking executables
+found architecture "my"
+* checking privileges
+* checking location
+running from /opt/zapret
+* stopping zapret service
+clearing zapret anchors
+* removing zapret PF hooks
+clearing zapret anchors
+* installing binaries
+using arch detect method : bash
+my is OK
+installing binaries ...
+linking : ../binaries/my/ip2net => /opt/zapret/ip2net
+linking : ../binaries/my/mdig => /opt/zapret/mdig
+linking : ../binaries/my/tpws => /opt/zapret/tpws
+* checking DNS
+system DNS is working
+
+enable ipv6 support (default : N) (Y/N) ? Y
+
+select filtering :
+1 : none
+2 : ipset
+3 : hostlist
+4 : autohostlist
+your choice (default : none) : 4
+selected : autohostlist
+
+enable tpws socks mode on port 987 ? (default : N) (Y/N) ? N
+
+enable tpws transparent mode ? (default : N) (Y/N) ? Y
+
+TPWS_PORTS=80,443
+TPWS_OPT="
+--filter-tcp=80 --methodeol <HOSTLIST> --new
+--filter-tcp=443 --split-pos=1,midsld --disorder <HOSTLIST> "
+verifying tpws options
+self-built version Oct 16 2025 01:07:20
+
+we have 2 user defined desync profile(s) and default low priority profile 0
+Loading hostlist /opt/zapret/ipset/zapret-hosts-auto.txt
+loading plain text list
+Loaded 0 hosts from /opt/zapret/ipset/zapret-hosts-auto.txt
+Loading hostlist /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+loading plain text list
+Loaded 8 hosts from /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+Loading hostlist /opt/zapret/ipset/zapret-hosts-user.txt
+loading plain text list
+Loaded 1 hosts from /opt/zapret/ipset/zapret-hosts-user.txt
+Running as UID=1 GID=1,12,61,100
+command line parameters verified
+do you want to edit the options (default : N) (Y/N) ? N
+
+current custom scripts in /opt/zapret/init.d/macos/custom.d:
+.keep
+Make sure this is ok
+
+LAN interface :
+1 : NONE
+2 : lo0
+3 : gif0
+4 : stf0
+5 : anpi0
+6 : anpi2
+7 : anpi1
+8 : en4
+9 : en5
+10 : en6
+11 : en1
+12 : en2
+13 : en3
+14 : bridge0
+15 : utun0
+16 : utun1
+17 : utun2
+18 : utun3
+19 : ap1
+20 : en0
+21 : awdl0
+22 : llw0
+your choice (default : NONE) : 2
+selected : lo0
+WAN interface :
+1 : ANY
+2 : lo0
+3 : gif0
+4 : stf0
+5 : anpi0
+6 : anpi2
+7 : anpi1
+8 : en4
+9 : en5
+10 : en6
+11 : en1
+12 : en2
+13 : en3
+14 : bridge0
+15 : utun0
+16 : utun1
+17 : utun2
+18 : utun3
+19 : ap1
+20 : en0
+21 : awdl0
+22 : llw0
+your choice (default : ANY) : 1
+selected : ANY
+
+do you want to auto download ip/host list (default : N) (Y/N) ? Y
+1 : get_refilter_domains.sh
+2 : get_antizapret_domains.sh
+3 : get_reestr_resolvable_domains.sh
+4 : get_reestr_hostlist.sh
+your choice (default : get_antizapret_domains.sh) : 1
+selected : get_refilter_domains.sh
+* installing zapret service
+* downloading blocked ip/host list
+clearing all known DNS caches
+DNS is working
+digging 8 ipv4 domains : /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+mdig stats : 00:00:00 : domains=8 success=5 error=3
+digging 8 ipv6 domains : /opt/zapret/ipset/zapret-hosts-user-exclude.txt
+/opt/zapret/ipset/def.sh: line 158: 18144 Segmentation fault: 11  "$MDIG" --family=$1 --threads=$MDIG_THREADS $cmd
+digging 0 ipv4 domains : /opt/zapret/ipset/zapret-hosts-user-ipban.txt
+mdig stats : 00:00:00 : domains=0 success=0 error=0
+digging 0 ipv6 domains : /opt/zapret/ipset/zapret-hosts-user-ipban.txt
+mdig stats : 00:00:00 : domains=0 success=0 error=0
+no supported ip list backend found
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  707k  100  707k    0     0  1262k      0 --:--:-- --:--:-- --:--:-- 1262k
+forcing zapret daemons to reload their hostlist
+* adding crontab entry
+* starting zapret service
+Already running 1: /opt/zapret/tpws/tpws
+successfully checked zapret anchors in /etc/pf.conf
+waiting for an ipv6 link local address on lo0 ...
+self-built version Oct 16 2025 01:07:20
+
+we have 1 user defined desync profile(s) and default low priority profile 0
+waiting for ip on lo0 for up to 30 second(s)...
+bind wait condition satisfied
+loading zapret anchor from /etc/pf.anchors/zapret
+pfctl: Use of -f option, could result in flushing of rules
+present in the main ruleset added by the system at startup.
+See /etc/pf.conf for further details.
+
+loading zapret-v4 anchor from /etc/pf.anchors/zapret-v4
+pfctl: Use of -f option, could result in flushing of rules
+present in the main ruleset added by the system at startup.
+See /etc/pf.conf for further details.
+
+loading zapret-v6 anchor from /etc/pf.anchors/zapret-v6
+pfctl: Use of -f option, could result in flushing of rules
+present in the main ruleset added by the system at startup.
+See /etc/pf.conf for further details.
+
+successfully loaded PF anchors
+enabling PF
+pfctl: pf already enabled
+
+press enter to continue

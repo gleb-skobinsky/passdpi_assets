@@ -415,27 +415,7 @@ copy_all()
 	cp -R "$1" "$2"
 	[ -d "$2/tmp" ] || mkdir "$2/tmp"
 }
-copy_openwrt()
-{
-	local ARCH="$(get_bin_arch)"
-	local BINDIR="$1/binaries/$ARCH"
-	local file
 
-	[ -d "$2" ] || mkdir -p "$2"
-
-	mkdir "$2/tpws" "$2/nfq" "$2/ip2net" "$2/mdig" "$2/binaries" "$2/binaries/$ARCH" "$2/init.d" "$2/tmp" "$2/files"
-	cp -R "$1/files/fake" "$2/files"
-	cp -R "$1/common" "$1/ipset" "$2"
-	cp -R "$1/init.d/openwrt" "$1/init.d/custom.d.examples.linux" "$2/init.d"
-	cp "$1/config" "$1/config.default" "$1/install_easy.sh" "$1/uninstall_easy.sh" "$1/install_bin.sh" "$1/install_prereq.sh" "$1/blockcheck.sh" "$2"
-	cp "$BINDIR/tpws" "$BINDIR/nfqws" "$BINDIR/ip2net" "$BINDIR/mdig" "$2/binaries/$ARCH"
-}
-
-fix_perms_bin_test()
-{
-	[ -d "$1" ] || return
-	find "$1/binaries" -name ip2net ! -perm -111 -exec chmod +x {} \;
-}
 fix_perms()
 {
 	[ -d "$1" ] || return
@@ -598,47 +578,6 @@ check_location()
 	echo running from $EXEDIR
 }
 
-
-service_install_systemd()
-{
-	echo \* installing zapret service
-
-	if [ -w "$SYSTEMD_SYSTEM_DIR" ] ; then
-		rm -f "$INIT_SCRIPT"
-		cp -f "$EXEDIR/init.d/systemd/zapret.service" "$SYSTEMD_SYSTEM_DIR"
-		"$SYSTEMCTL" daemon-reload
-		"$SYSTEMCTL" enable zapret || {
-			echo could not enable systemd service
-			exitp 20
-		}
-	else
-		echo '!!! READONLY SYSTEM DETECTED !!! CANNOT INSTALL SYSTEMD UNITS !!!'
-	fi
-}
-
-timer_install_systemd()
-{
-	echo \* installing zapret-list-update timer
-
-	if [ -w "$SYSTEMD_SYSTEM_DIR" ] ; then
-		"$SYSTEMCTL" disable zapret-list-update.timer
-		"$SYSTEMCTL" stop zapret-list-update.timer
-		cp -f "$EXEDIR/init.d/systemd/zapret-list-update.service" "$SYSTEMD_SYSTEM_DIR"
-		cp -f "$EXEDIR/init.d/systemd/zapret-list-update.timer" "$SYSTEMD_SYSTEM_DIR"
-		"$SYSTEMCTL" daemon-reload
-		"$SYSTEMCTL" enable zapret-list-update.timer || {
-			echo could not enable zapret-list-update.timer
-			exitp 20
-		}
-		"$SYSTEMCTL" start zapret-list-update.timer || {
-			echo could not start zapret-list-update.timer
-			exitp 30
-		}
-	else
-		echo '!!! READONLY SYSTEM DETECTED !!! CANNOT INSTALL SYSTEMD UNITS !!!'
-	fi
-}
-
 download_list()
 {
 	[ -x "$GET_LIST" ] &&	{
@@ -668,74 +607,6 @@ check_dns()
 	return 0
 }
 
-
-install_systemd()
-{
-	INIT_SCRIPT_SRC="$EXEDIR/init.d/sysv/zapret"
-	CUSTOM_DIR="$ZAPRET_RW/init.d/sysv"
-
-	check_bins
-	require_root
-	check_readonly_system
-	check_location copy_all
-	check_dns
-	check_virt
-	service_stop_systemd
-	select_fwtype
-	check_prerequisites_linux
-	install_binaries
-	select_ipv6
-	ask_config_offload
-	ask_config
-	service_install_systemd
-	download_list
-	# in case its left from old version of zapret
-	crontab_del_quiet
-	# now we use systemd timers
-	timer_install_systemd
-	service_start_systemd
-}
-
-_install_sysv()
-{
-	# $1 - install init script
-
-	CUSTOM_DIR="$ZAPRET_RW/init.d/sysv"
-
-	check_bins
-	require_root
-	check_readonly_system
-	check_location copy_all
-	check_dns
-	check_virt
-	service_stop_sysv
-	select_fwtype
-	check_prerequisites_linux
-	install_binaries
-	select_ipv6
-	ask_config_offload
-	ask_config
-	$1
-	download_list
-	crontab_del_quiet
-	# desktop system. more likely up at daytime
-	crontab_add 10 22
-	service_start_sysv
-}
-
-install_sysv()
-{
-	INIT_SCRIPT_SRC="$EXEDIR/init.d/sysv/zapret"
-	_install_sysv install_sysv_init
-}
-
-install_openrc()
-{
-	INIT_SCRIPT_SRC="$EXEDIR/init.d/openrc/zapret"
-	_install_sysv install_openrc_init
-}
-
-
 install_linux()
 {
 	INIT_SCRIPT_SRC="$EXEDIR/init.d/sysv/zapret"
@@ -764,143 +635,6 @@ install_linux()
 	echo "if your system uses sysv init : ln -fs $INIT_SCRIPT_SRC /etc/init.d/zapret ; chkconfig zapret on"
 }
 
-
-deoffload_openwrt_firewall()
-{
-	echo \* checking flow offloading
-
-	[ "$FWTYPE" = "nftables" ] || is_ipt_flow_offload_avail || {
-		echo unavailable
-		return
-	}
-
-	local fo=$(uci -q get firewall.@defaults[0].flow_offloading)
-
-	if [ "$fo" = "1" ] ; then
-		local mod=0
-		printf "system wide flow offloading detected. "
-		case $FLOWOFFLOAD in
-			donttouch)
-				if [ "$NFQWS_ENABLE" = "1" ]; then
-					echo its incompatible with nfqws tcp data tampering. disabling
-					uci set firewall.@defaults[0].flow_offloading=0
-					mod=1
-				else
-					if dir_is_not_empty "$CUSTOM_DIR/custom.d" ; then
-						echo
-						echo !!! CUSTOM SCRIPTS ARE PRESENT !!! only you can decide whether flow offloading is compatible.
-						echo !!! CUSTOM SCRIPTS ARE PRESENT !!! if they use nfqws they will not work. you have to disable system-wide offloading.
-					else
-						echo its compatible with selected options. not disabling
-					fi
-				fi
-			;;
-		*)
-			echo zapret will disable system wide offloading setting and add selective rules if required
-			uci set firewall.@defaults[0].flow_offloading=0
-			mod=1
-		esac
-		[ "$mod" = "1" ] && uci commit firewall
-	else
-		echo system wide software flow offloading disabled. ok
-	fi
-}
-
-
-
-install_openwrt()
-{
-	INIT_SCRIPT_SRC="$EXEDIR/init.d/openwrt/zapret"
-	CUSTOM_DIR="$ZAPRET_RW/init.d/openwrt"
-	FW_SCRIPT_SRC="$EXEDIR/init.d/openwrt/firewall.zapret"
-	OPENWRT_FW_INCLUDE=/etc/firewall.zapret
-	OPENWRT_IFACE_HOOK="$EXEDIR/init.d/openwrt/90-zapret"
-
-	check_bins
-	require_root
-	check_location copy_openwrt
-	install_binaries
-	check_dns
-	check_virt
-
-	local FWTYPE_OLD=$FWTYPE
-
-	echo \* stopping current firewall rules/daemons
-	"$INIT_SCRIPT_SRC" stop_fw
-	"$INIT_SCRIPT_SRC" stop_daemons
-
-	select_fwtype
-	select_ipv6
-	check_prerequisites_openwrt
-	ask_config
-	ask_config_tmpdir
-	ask_config_offload
-	# stop and reinstall sysv init
-	install_sysv_init
-	[ "$FWTYPE_OLD" != "$FWTYPE" -a "$FWTYPE_OLD" = iptables -a -n "$OPENWRT_FW3" ] && remove_openwrt_firewall
-	# free some RAM
-	clear_ipset
-	download_list
-	crontab_del_quiet
-	# router system : works 24/7. night is the best time
-	crontab_add 0 6
-	cron_ensure_running
-	install_openwrt_iface_hook
-	# in case of nftables or iptables without fw3 sysv init script also controls firewall
-	[ -n "$OPENWRT_FW3" -a "$FWTYPE" = iptables ] && install_openwrt_firewall
-	service_start_sysv
-	deoffload_openwrt_firewall
-	restart_openwrt_firewall
-}
-
-
-
-remove_pf_zapret_hooks()
-{
-	echo \* removing zapret PF hooks
-
-	pf_anchors_clear
-}
-
-macos_fw_reload_trigger_clear()
-{
-	LISTS_RELOAD=
-	write_config_var LISTS_RELOAD
-}
-macos_fw_reload_trigger_set()
-{
-	LISTS_RELOAD="$INIT_SCRIPT_SRC reload-fw-tables"
-	write_config_var LISTS_RELOAD
-}
-
-install_macos()
-{
-	INIT_SCRIPT_SRC="$EXEDIR/init.d/macos/zapret"
-	CUSTOM_DIR="$ZAPRET_RW/init.d/macos"
-
-	# compile before root
-	check_bins
-	require_root
-	check_location copy_all
-	service_stop_macos
-	remove_pf_zapret_hooks
-	install_binaries
-	check_dns
-	select_ipv6
-	ask_config
-	service_install_macos
-	macos_fw_reload_trigger_clear
-	# gzip lists are incompatible with PF
-	GZIP_LISTS=0 write_config_var GZIP_LISTS
-	download_list
-	macos_fw_reload_trigger_set
-	crontab_del_quiet
-	# desktop system. more likely up at daytime
-	crontab_add 10 22
-	service_start_macos
-}
-
-
 # build binaries, do not use precompiled
 [ "$1" = "make" ] && FORCE_BUILD=1
 
@@ -910,23 +644,7 @@ fsleep_setup
 check_system
 check_source
 
-case $SYSTEM in
-	systemd)
-		install_systemd
-		;;
-	openrc)
-		install_openrc
-		;;
-	linux)
-		install_linux
-		;;
-	openwrt)
-		install_openwrt
-		;;
-	macos)
-		install_macos
-		;;
-esac
+install_linux
 
 
 exitp 0
